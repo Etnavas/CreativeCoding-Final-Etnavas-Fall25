@@ -19,302 +19,403 @@ Details for maze:
 - Wall/cave mural (showing some context)
 - small maze map at the begining
 - door that leads to end/exit 
-- fragment collection to leave maze (if time allows)\
+- fragment collection to leave maze (if time allows)
 - obsticles + enemies 
 */
 
-
-
 let player;
 let state = "room1";
-let wallLayer;
-//background variables
+let tiles;
+let tileSize = 20;
+let fragments; 
+let fragmentSprites;
+let fragmentsCollected = 0;
+let playerStatic;
+let wallSprite;
+let doorSprite;
+let playerUp;
+let playerDown;
 
+function preload () {
+
+	playerStatic = loadImage('characterSprites/Illustration11.png');
+
+	fragmentSprites = loadAnimation('characterSprites/fragmentAnimation.png', {frameSize: [32,32], frames: 5});
+
+	wallSprite = loadImage ('characterSprites/rockWalls.png')
+
+	doorSprite = loadImage ('characterSprites/doors.png')
+
+	playerUp = loadAnimation('characterSprites/playerBack.png', {frameSize: [32,32], frames: 5});
+	
+	playerDown = loadAnimation('characterSprites/playerDown.png', {frameSize: [32,32], frames: 5});
+}
 
 function setup() {
-	new Canvas (300,300);
-	displayMode (CENTER, PIXELATED, 2);
+	new Canvas(600, 600);
+	
+	displayMode(CENTER, PIXELATED, 8);
 
 	world.gravity.y = 0;
 
-	wallLayer = new Group(); //array of walls 
-	wallLayer.layer = 5;
-
-	
 	//allSprites.debug = true
 
-	//background (100);
-	player = new Sprite(150,150);
-	player.image = 'Sharacter Sprites /Illustration11.png';
+	tiles = new Group();
+	tiles.collider = 'static';
+	tiles.layer = 5;
+
+	player = new Sprite(130, 40, 8, 15);
+	player.img = playerStatic;
 	player.layer = 7;
-	//player = loadAni ('idle',"Files" , 1);
-	//player = loadAni ('leftRight',"Files" , #); 
-	//player = loadAni ('upp',"Files" , #);
-	//player = loadAni ('downn',"Files" , #);
+	player.rotationLock = true;
 
-	player.h = 20;
-	player.w = 10;
-	player.offset.x = 0.3;
-	player.offset.y = 3;
-	player.rotationLock = true; 
+	// Fragment setup
+	fragments = new Group();
+	fragments.collider = 'kinematic';
+	fragments.layer = 6;
 
-	//rooms functions to reference 
-	level1()
-	level2()
-	level3()
-	level4()
+	level1();
+	level2();
+	level3();
+	level4();
 
-
- 
 	hideRoom("room2");
 	hideRoom("room3");
 	hideRoom("room4");
-
-
 }
 
 function draw() {
 	update();
-	//checkTransition ();
-  }
-  
-
-
-function update() {
 	
-	//background (100,23,82);
-
-
-
-  //room states to switch between rooms
-  if (state === "room1") {
-	background (100);
-  }
-
-  if (state === "room2") {
-	background (255);
-  }
-
-  if (state === "room3") {
-	background (100);
-  }
-
-  if (state === "room4") {
-	background (0);
-  }
-
-  //check room change 
-  checkTransition ();
-
-	
-	
-  //player movement keyboard
-	playerMovements ();
 }
 
+function update() {
 
+	// Room backgrounds
+	//room states to switch between rooms
+	if (state === "room1") {
+		background(255);
+	}
+	if (state === "room2") {
+		background(200);
+	}
+	if (state === "room3") {
+		background(100);
+	}
+	if (state === "room4") {
+		background(0);
+	}
+
+	//check room change 
+	checkTransition();
+
+	//player movement keyboard
+	playerMovements();
+
+	//fragment collection
+	collectFragments();
+
+
+	cameraS();
+	//fragmentCountDisplay ()
+}
 
 // Room 1
 function level1() {
-	let leftWall = new wallLayer.Sprite(5, 150, 10, 300, 's');
-	leftWall.color = "#882222";
-	leftWall.room = "room1";
-	
-	let rightWall = new wallLayer.Sprite(295, 150, 10, 300, 's');
-	rightWall.color = "#882222";
-	rightWall.room = "room1";
-	
-	let topWall = new wallLayer.Sprite(150, 5, 300, 10, 's');
-	topWall.color = "#882222";
-	topWall.room = "room1";
-	
-	let bottomLeft = new wallLayer.Sprite(60, 295, 120, 10, 's');
-	bottomLeft.color = "#882222";
-	bottomLeft.room = "room1";
-	
-	let bottomRight = new wallLayer.Sprite(240, 295, 120, 10, 's');
-	bottomRight.color = "#882222";
-	bottomRight.room = "room1";
+
+	let layout = [
+		"==============",
+		"=............=",
+		"=............=",
+		"=............=",
+		"=............=",
+		"=............=",
+		"=............=",
+		"======EE======"
+	];
+
+	createTilesFromLayout(layout, "room1", "#882222");
 }
 
-// Room 2
 function level2() {
-	let leftWall = new wallLayer.Sprite(5, 150, 10, 300, 's');
-	leftWall.color = "#663333";
-	leftWall.room = "room2";
-	
-	let rightWall = new wallLayer.Sprite(295, 150, 10, 300, 's');
-	rightWall.color = "#663333";
-	rightWall.room = "room2";
-	
-	let topWall = new wallLayer.Sprite(150, 5, 300, 10, 's');
-	topWall.color = "#663333";
-	topWall.room = "room2";
-	
-	let bottomLeft = new wallLayer.Sprite(60, 295, 120, 10, 's');
-	bottomLeft.color = "#663333";
-	bottomLeft.room = "room2";
-	
-	let bottomRight = new wallLayer.Sprite(240, 295, 120, 10, 's');
-	bottomRight.color = "#663333";
-	bottomRight.room = "room2";
-	
-	// Maze obstacles
-	let maze1 = new wallLayer.Sprite(150, 60, 180, 10, 's');
-	maze1.color = "#cc6666";
-	maze1.room = "room2";
-	
-	let maze2 = new wallLayer.Sprite(230, 120, 10, 100, 's');
-	maze2.color = "#cc6666";
-	maze2.room = "room2";
-	
-	let maze3 = new wallLayer.Sprite(150, 170, 140, 10, 's');
-	maze3.color = "#cc6666";
-	maze3.room = "room2";
-	
-	let maze4 = new wallLayer.Sprite(90, 220, 10, 80, 's');
-	maze4.color = "#cc6666";
-	maze4.room = "room2";
+
+	let layout = [
+		"=====EE===",
+		"===......=",
+		"===......=",
+		"===......=",
+		"===......=",
+		"====....==",
+		"====....==",
+		"====....==",
+		"====*...==",
+		"=====..===",
+		"=====..===",
+		"=====..===",
+		"=====..===",
+		"=====..===",
+		"=====EE==="
+	];
+
+	createTilesFromLayout(layout, "room2", "#663333");
 }
 
-// Room 3 - placeholder
 function level3() {
-	let leftWall = new wallLayer.Sprite(5, 150, 10, 300, 's');
-	leftWall.color = "#445544";
-	leftWall.room = "room3";
-	
-	let rightWall = new wallLayer.Sprite(295, 150, 10, 300, 's');
-	rightWall.color = "#445544";
-	rightWall.room = "room3";
-	
-	let topWall = new wallLayer.Sprite(150, 5, 300, 10, 's');
-	topWall.color = "#445544";
-	topWall.room = "room3";
-	
-	let bottomLeft = new wallLayer.Sprite(60, 295, 120, 10, 's');
-	bottomLeft.color = "#445544";
-	bottomLeft.room = "room3";
-	
-	let bottomRight = new wallLayer.Sprite(240, 295, 120, 10, 's');
-	bottomRight.color = "#445544";
-	bottomRight.room = "room3";
+
+	let layout = [
+		"================",
+		"=..............=",
+		"=.............==",
+		"=.==========..==",
+		"=.=............=",
+		"=.=..........=.=",
+		"=.=..=====...=.=",
+		"=.=..=.*.=...=.=",
+		"=.=..=...=...=.=",
+		"=.=..=...=====.=",
+		"=.=..=.........=",
+		"=.=..=====..==.=",
+		"=..............=",
+		"=..............=",
+		"=======EEE====="
+	];
+
+	createTilesFromLayout(layout, "room3", "#445544");
 }
 
-// Room 4 - placeholder
 function level4() {
-	let leftWall = new wallLayer.Sprite(5, 150, 10, 300, 's');
-	leftWall.color = "#222222";
-	leftWall.room = "room4";
-	
-	let rightWall = new wallLayer.Sprite(295, 150, 10, 300, 's');
-	rightWall.color = "#222222";
-	rightWall.room = "room4";
-	
-	let topWall = new wallLayer.Sprite(150, 5, 300, 10, 's');
-	topWall.color = "#222222";
-	topWall.room = "room4";
-	
-	let bottomWall = new wallLayer.Sprite(150, 295, 300, 10, 's');
-	bottomWall.color = "#222222";
-	bottomWall.room = "room4";
+
+	let layout = [
+		"===============",
+		"=.............=",
+		"=.............=",
+		"====..===..====",
+		"=.....=.......=",
+		"=.....=.......=",
+		"=.....=.......=",
+		"=======..======",
+		"=.............=",
+		"=.............=",
+		"====..======..=",
+		"=.....=.......=",
+		"=..=......==..=",
+		"=*.=..........=",
+		"==============="
+	];
+
+	createTilesFromLayout(layout, "room4", "#222222");
 }
 
+function createTilesFromLayout(layout, roomName, wallColor) {
+	for (let row = 0; row < layout.length; row++) { // top to bottom 
 
+		for (let col = 0; col < layout[row].length; col++) { //left to right 
+
+			let char = layout[row][col]; //get tile at this row and this column 
+			
+			if (char === '=') { //wall tiles 
+				let x = col * tileSize + tileSize/2;
+				let y = row * tileSize + tileSize/2;
+				
+				let tile = new tiles.Sprite(x, y, tileSize, tileSize, 's');
+				tile.image = wallSprite;
+				tile.room = roomName;
+			}
+			else if (char === 'E') { //door tiles 
+				
+				let x = col * tileSize + tileSize / 2;
+				let y = row * tileSize + tileSize / 2;
+				
+				let exitTile = new tiles.Sprite(x, y, tileSize, tileSize, 's');
+				//exitTile.color = "#00FF00";
+				exitTile.image = doorSprite;
+				exitTile.collider = "none";
+				exitTile.room = roomName;
+			}
+			else if (char === '*') { //fragment tiles
+
+				let x = col * tileSize + tileSize / 2;
+				let y = row * tileSize + tileSize / 2;
+				
+				let fragment = new fragments.Sprite(x, y, 15, 15);
+				fragment.ani = fragmentSprites;
+				fragment.room = roomName;
+			}
+		}
+	}
+}
 
 function checkTransition () {
+	// Room 1 to room 2
+	if (state === "room1" && player.y > 130 && player.x > 120 && player.x < 190) {
+		if (countFragmentsInRoom("room1") === 0) { //only transitions room if all room fragments are collected 
 
-	//room 1 to room 2
-	if (state === "room1" && player.y > 290 && player.x > 120 && player.x < 180) {
-		hideRoom("room1");
-		showRoom ("room2");
-		state = "room2";
-		player.y = 30;
+			hideRoom("room1");
+			showRoom("room2");
+			state = "room2";
+			player.y = 30; //move player to the top of new room
+		}
 	}
 
-	//room 2 to room 3
-	if (state === "room2" && player.y > 290 && player.x > 120 && player.x < 180) {
-		hideRoom("room2");
-		showRoom ("room3");
-		state = "room3";
-		player.y = 30;
+	// Room 2 to room 3
+	if (state === "room2" && player.y > 260 && player.x > 103 && player.x < 264) {
+		if (countFragmentsInRoom("room2") === 0) { 
+
+			hideRoom("room2");
+			showRoom("room3");
+			state = "room3";
+			player.y = 30;
+		}
 	}
 
-	//room 3 to room 4
-	if (state === "room3" && player.y > 290 && player.x > 120 && player.x < 180) {
-		hideRoom("room3");
-		showRoom ("room4");
-		state = "room4";
-		player.y = 30;
-	}
-}
+	// Room 3 to room 4
+	if (state === "room3" && player.y > 264 && player.x > 144 && player.x < 194) {
+		if (countFragmentsInRoom("room3") === 0) {
 
-
-
-//show room 
-function showRoom (roomName) { //takes room name as parameter
-	for (let i = 0; i < wallLayer.length; i++) { //loops through wallLayer
-		let wall = wallLayer [i]; // grabs current wall 
-		if (wall.room === roomName) { //checks for room
-			wall.collider = "static";//solid
-			if (wall.color) {
-				wall.visible = true;// appears on screen 
-			}
+			hideRoom("room3");
+			showRoom("room4");
+			state = "room4";
+			player.y = 30; 
 		}
 	}
 }
 
-//hide room 
-function hideRoom (roomName) {
-	for (let i = 0; i < wallLayer.length; i++) { 
-		let wall = wallLayer [i];
+// Count remaining fragments in a specific room
+function countFragmentsInRoom(roomName) {
+
+	let count = 0; //counter start
+
+	for (let i = 0; i < fragments.length; i++) { // loop through all fragments
+
+		if (fragments[i].room === roomName) { //check if fragment belongs to room
+			count++; //add 1 to counter 
+		}
+	}
+
+	return count;
+}
+
+// show/hide rooms fuction + room fragment check
+function showRoom(roomName) {
+
+	for (let i = 0; i < tiles.length; i++) { //loop through all tiles 
+
+		let wall = tiles[i]; //get current tile
+
+		if (wall.room === roomName) { //check if tile belongs to room 
+
+			wall.collider = "static"; //physics so player can't walk through walls 
+			wall.visible = true; // tiles are visible
+		}
+	}
+
+	for (let i = 0; i < fragments.length; i++) { //loop through fragments 
+
+		let fragment = fragments[i]; //get current fragment 
+
+		if (fragment.room === roomName) { //check if fragment belongs to room
+
+			fragment.visible = true; //make visible 
+		}
+	}
+}
+
+function hideRoom(roomName) {
+	for (let i = 0; i < tiles.length; i++) {
+
+		let wall = tiles[i];
+
 		if (wall.room === roomName) {
+
 			wall.collider = "none";
-			if (wall.color) {
-				wall.visible = false;
-			}
+			wall.visible = false;
+		}
+	}
+
+	for (let i = 0; i < fragments.length; i++) {
+
+		let fragment = fragments[i];
+
+		if (fragment.room === roomName) {
+
+			fragment.visible = false;
 		}
 	}
 }
 
+// camera function
+function cameraS() {
 
+	camera.x = player.x;
+	camera.y = player.y;
+	camera.zoom = 5;
+}
 
-//movent function
+//player movements + animations (need work)
 function playerMovements () {
+	player.speed = 2;
 
-	player.speed = 1;
+	if (kb.pressing('up')) {
 
-	if (kb.pressing('up')) { //arrows
 		player.direction = -90;
-
-		//play animation
-		//player.changeAni('upp');
+		player.ani = playerUp;
 
 	} else if (kb.pressing('down')) {
 
 		player.direction = 90;
-		
-		//play animation
-		//player.changeAni('downn');
+		player.ani = playerDown;
 
 	} else if (kb.pressing('left')) {
-		player.direction = 180;
 
-		//play animation
-		//player.changeAni('leftRight');
+		player.direction = 180;
 		player.scale.x = 1;
 
 	} else if (kb.pressing('right')) {
-		player.direction = 0;
 
-		//play animation
-		//player.changeAni('leftRight');
+		player.direction = 0;
 		player.scale.x = -1;
 
 	} else {
-	  player.speed = 0;
-	  //player.changeAni('idle');
+
+		player.speed = 0;
+		player.image = playerStatic;
 	}
 }
 
-//fragments + collecting functionality 
 
+//fragment collecting functionality
+function collectFragments() {
+
+	// Check if player overlaps with any fragments
+	for (let i = fragments.length - 1; i >= 0; i--) {
+
+		let fragment = fragments[i];
+
+		if (fragment.visible && player.overlaps(fragment)) {
+
+			fragment.remove();
+			fragmentsCollected++;
+			console.log('Fragments collected:', fragmentsCollected);
+		}
+	}
+}
+
+//fragment count on screen (needs work keeps bugging out camera?)
+/*
+function fragmentCountDisplay () {
+	push();
+
+	let screenX = camera.x - width / (2 * camera.zoom) + 20;
+	let screenY = camera.y - height / (2 * camera.zoom) + 20;
+
+	fill(255, 255, 0); // Yellow color
+	textSize(8);
+	textAlign(LEFT, TOP);
+
+	text ("fragments left:" + fragmentsLeft, screenX, screenY); 
+
+	pop(); 
+}
+*/
+
+//minimap (if time allows)
